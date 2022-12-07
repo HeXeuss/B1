@@ -15,17 +15,21 @@ typedef struct TItem
 
 TITEM * sortedMerge(TITEM * left, TITEM * right, int order)
 {
-    //base case
-    //if one array is empty return the other one
-    if(left==NULL)
-        return right;
-    if(right==NULL)
-        return left;
-    TITEM * result;
 
-    if(order==1)
+    //head pointer of newly sorted list
+    TITEM * result = NULL;
+
+    //if one array is empty return the other one 
+    if( !left )
+        return right;
+
+    if( !right )
+      return left;
+
+    //reconnect lists in order 
+    if( order )
     {
-        if(strcmp(left->m_Name , right->m_Name)<0)
+        if(strcmp(left->m_Name , right->m_Name) <= 0)
         {
             result = left;
             result->m_Next = sortedMerge(left->m_Next, right, order);
@@ -36,9 +40,9 @@ TITEM * sortedMerge(TITEM * left, TITEM * right, int order)
             result->m_Next = sortedMerge(left, right->m_Next, order);
         }
     }
-    if(order==0)
+    if( !order )
     {
-        if(strcmp(left->m_Name , right->m_Name)>0)
+        if(strcmp(left->m_Name , right->m_Name) >= 0)
         {
             result = left;
             result->m_Next = sortedMerge(left->m_Next, right, order);
@@ -54,11 +58,11 @@ TITEM * sortedMerge(TITEM * left, TITEM * right, int order)
 
 TITEM * findMiddle(TITEM * list)
 {
-    TITEM * slow_ptr=list;
     TITEM * fast_ptr=list->m_Next;
+    TITEM * slow_ptr=list;
 
     //fast ptr goes 2x faster => slow ptr will land in the mid and fast ptr at the end
-    while( fast_ptr!=NULL && fast_ptr->m_Next!=NULL)
+    while( fast_ptr && fast_ptr->m_Next )
     {
         fast_ptr = fast_ptr->m_Next->m_Next;
         slow_ptr = slow_ptr->m_Next;
@@ -70,18 +74,21 @@ TITEM * findMiddle(TITEM * list)
 
 TITEM * sortList(TITEM * list, int order)
 {
-    //base case
-    if(list == NULL || list->m_Next == NULL)
+    //if list is size 0 or 1 retrun it
+    if( !list || !list->m_Next )
         return list;
 
     //find middle
     TITEM * middle = findMiddle(list);
+    //start of list "half #1"
     TITEM * left   = list;
+    //middle + 1 "half #2"
     TITEM * right  = middle->m_Next;
 
     //sever the midpoint link
-    middle->m_Next=NULL;
+    middle->m_Next = NULL;
 
+    //split list rec
     left  = sortList( left,  order );
     right = sortList( right, order );
 
@@ -96,9 +103,9 @@ TITEM * newItem( const char * name, TITEM * next )
     list = (TITEM*) malloc (sizeof(TITEM));
 
     //alocate and coppy string
-    size_t length = strlen(name);
-    list->m_Name = (char*) malloc (length+1);
-    strncpy(list->m_Name, name, length+1);
+    size_t length = strlen(name)+1;
+    list->m_Name = (char*) malloc (length);
+    strcpy(list->m_Name, name);
 
     //place '\0' in m_Secret
     for(int i=0 ; i < 24 ; i++) 
@@ -110,23 +117,18 @@ TITEM * newItem( const char * name, TITEM * next )
     return list;
 }
 
-void freeList (TITEM * l)
+void freeList (TITEM * list)
 {
-	if ( l != NULL ) {
-		freeList( l -> m_Next );
+  //if not NULL free data and go deeper in the list
+	if ( list!=NULL ) 
+  {
+    if(list->m_Name!=NULL)
+      free(list->m_Name);
+		freeList( list -> m_Next );
 	}
-	free(l);
+  //if at the end of the list free it
+	free(list);
 }
-
-void print(TITEM * list)
-{
-    while(list!=NULL)
-    {
-        printf("%s\n", list->m_Name);
-        list=list->m_Next; 
-    }
-}
-
 
 #ifndef __PROGTEST__
 int main ( int argc, char * argv [] )
@@ -152,7 +154,7 @@ int main ( int argc, char * argv [] )
   assert ( l -> m_Next -> m_Next -> m_Next -> m_Next
            && ! strcmp ( l -> m_Next -> m_Next -> m_Next -> m_Next -> m_Name, "PA1" ) );
   assert ( l -> m_Next -> m_Next -> m_Next -> m_Next -> m_Next == NULL );
-  l = sortList ( l, 1 );
+  l=sortList(l, 1);
   assert ( l
            && ! strcmp ( l -> m_Name, "AG1" ) );
   assert ( l -> m_Next
